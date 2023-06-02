@@ -211,3 +211,14 @@ fn get_user(cookie: Cookies) -> String{
 
 Now try to first go to `/resource/<id>` then go to `/user` and vice versa. You'll see how amazing it is.
 
+
+#### Types of Cookies
+
+It would be helpful for you to know about 2 types of important cookie.
+
+- Session
+  - Stay for as long as the tab is alive
+- Persistent
+  - Stay until the end of the browser's life.
+
+
