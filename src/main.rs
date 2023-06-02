@@ -32,8 +32,13 @@ fn get_secured_page(path: PathBuf) -> Option<NamedFile>{
     NamedFile::open(Path::new("static/").join(path)).ok()
 }
 
+#[get("/earth?<continent>&<country>")]
+fn earth_country(continent: &RawStr, country: &RawStr) -> String{
+    format!("You've landed in earth at {} continent and {} country", continent, country)
+}
+
 fn main(){
     let server = rocket::ignite();
-    let server = server.mount("/", routes![my_first_route, the_earth, earth_continent, get_page, get_secured_page]);
+    let server = server.mount("/", routes![my_first_route, the_earth, earth_continent, get_page, get_secured_page, earth_country]);
     let server = server.launch();
 }
