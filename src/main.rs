@@ -2,43 +2,29 @@
 
 #[macro_use] extern crate rocket;
 use rocket::http::RawStr;
+use rocket::http::Cookies;
+
+#[get("/resource/<id>")]
+fn set_cookie(id:String, mut cookies: Cookies) -> String{
+    cookies.add_private(rocket::http::Cookie::new("user_id", id));
+    "Cookie set".to_string()
+}
+
+#[get("/resource")]
+fn get_cookie(mut cookies: Cookies) -> String{
+    let user_id = cookies.get_private("user_id").unwrap();
+    format!("User id is {}", user_id.value())
+}
+
 
 #[get("/")]
-fn my_first_route() -> String{
-    String::from("Hello, Rocket!")
+fn index() -> &'static str {
+    "Hello World"
 }
 
-#[get("/earth")]
-fn the_earth() -> String{
-    String::from("You've landed in earth")
-}
-
-// <snippet-code>
-#[get("/earth/<continent>")]
-fn earth_continent(continent: &RawStr) -> String{
-    format!("You've landed in earth at {} continent", continent)
-}
-
-use std::path::PathBuf;
-#[get("/page/<path..>")]
-fn get_page(path: PathBuf) -> String {
-    format!("You've landed in page: {}", path.display())
-}
-
-use rocket::response::NamedFile;
-use std::path::Path;
-#[get("/secured/<path..>")]
-fn get_secured_page(path: PathBuf) -> Option<NamedFile>{
-    NamedFile::open(Path::new("static/").join(path)).ok()
-}
-
-#[get("/earth?<continent>&<country>")]
-fn earth_country(continent: &RawStr, country: &RawStr) -> String{
-    format!("You've landed in earth at {} continent and {} country", continent, country)
-}
 
 fn main(){
     let server = rocket::ignite();
-    let server = server.mount("/", routes![my_first_route, the_earth, earth_continent, get_page, get_secured_page, earth_country]);
+    let server = server.mount("/", routes![index, set_cookie, get_cookie]);
     let server = server.launch();
 }

@@ -169,3 +169,45 @@ fn earth_country(continent: String, country:String){
 ```
 
 If you put `http://localhost:8000/earth?continent=asia&country=philippines` in your RRL you'll see that it'll output: "You've landed in earth at asia continent and philippines country"
+
+
+### Optional Parameters
+
+Query parameters can be set to be optional by doing so:
+
+```rust
+#[get("/mars?<continent>&<country>&<state>")]
+fn mars_country_state(continent: &RawStr, country: &RawStr, state: Option<&RawStr>) -> String{
+    if let Some(state) = state{
+        format!("You've landed in mars at {} continent and {} country and {} state", continent, country, state)
+    }else{
+        format!("You've landed in mars at {} continent and {} country", continent, country)
+    }
+}
+```
+
+Having the state as option, calling the path without it will still work as expected:`http://localhost:8000/mars?continent=water&country=melon`.
+
+### Cookies
+
+Cookies are important, they can be use for authentication and authorization, improve product recommendation, etc.
+
+In rocket, we can set our own cookie and control it on our own accord. 
+
+```rust
+use rocket::http::{Cookies, Cookie};
+#[get("/resource/<id>")]
+fn set_cookie(id: String, cookie: Cookies) -> String{
+    cookie.add_private(Cookies::new("user_id", id));
+    String::from("Cookies was set");
+}
+
+#[get("/user")]
+fn get_user(cookie: Cookies) -> String{
+    format!("User ID is: {}", cookie.get_private("user_id").unwrap().value());
+}
+
+```
+
+Now try to first go to `/resource/<id>` then go to `/user` and vice versa. You'll see how amazing it is.
+
