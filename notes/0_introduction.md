@@ -222,3 +222,16 @@ It would be helpful for you to know about 2 types of important cookie.
   - Stay until the end of the browser's life.
 
 
+### Format
+
+We can specify the specific format we want to only accept or respond in our function by adding `format` inr our function attribute:
+
+```rust
+#[post("/", format = "application/json")]
+fn do_something(){
+    //...
+}
+```
+
+In this case, whether there's a post request, in order for the `do_something()` be invoke, it should have a `content-type` of `application/json` (you can also you `json` if you want to).
+
