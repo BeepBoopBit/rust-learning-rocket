@@ -235,3 +235,119 @@ fn do_something(){
 
 In this case, whether there's a post request, in order for the `do_something()` be invoke, it should have a `content-type` of `application/json` (you can also you `json` if you want to).
 
+### Body Data
+
+If you want to process the data of the a request, we can do this by adding `data` to the function's attribute:
+
+```rust
+
+#[post("/", format="json", data="<param>")]
+fn accept_something(param: T){
+    // do something
+}
+```
+
+Now the type `T` should be something that implements the `FromData` trait.
+
+#### Forms Processing
+
+If we want to process the values passed by a form of your front-end we need to make use of the the `form` type.
+
+```rust
+
+use rocket::request::Form;
+
+#[derive(FromForm)]
+struct UserData{
+    name: String,
+    age: u32,
+    email: String,
+}
+
+#[post("/doSomething", data = "<tas>")]
+fn somethingNew(data: Form<UserData>){
+    // do something
+}
+```
+
+
+#### Sample Program for POST
+
+**main.rs**
+```rust
+#![feature(decl_macro)]
+
+#[macro_use] extern crate rocket;
+use rocket::http::RawStr;
+use rocket::http::Cookies;
+
+#[get("/resource/<id>")]
+fn set_cookie(id:String, mut cookies: Cookies) -> String{
+    cookies.add_private(rocket::http::Cookie::new("user_id", id));
+    "Cookie set".to_string()
+}
+
+#[get("/resource")]
+fn get_cookie(mut cookies: Cookies) -> String{
+    let user_id = cookies.get_private("user_id").unwrap();
+    format!("User id is {}", user_id.value())
+}
+use rocket::request::{Form, FromForm};
+
+#[derive(FromForm)]
+struct UserData{
+    name: String,
+    age: String,
+    email: String,
+    password: String,
+}
+
+use rocket::response::NamedFile;
+
+#[get("/form")]
+fn form() -> NamedFile {
+    NamedFile::open("static/index.html").unwrap()
+}
+
+
+#[post("/doSomething", data = "<param>")]
+fn do_something(param: Form<UserData>) -> String {
+    format!("Name: {}, Age: {}, Email: {}, Password: {}", param.name, param.age, param.email, param.password)
+}
+
+#[get("/")]
+fn index() -> &'static str {
+    "Hello World"
+}
+
+
+
+
+fn main(){
+    let server = rocket::ignite();
+    let server = server.mount("/", routes![index, set_cookie, get_cookie, form, do_something]);
+    let server = server.launch();
+}
+```
+
+**static/index.html**
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web</title>
+</head>
+<body>
+    <form method="POST" action="/doSomething">
+        <input type="text" name="name" placeholder="Name"> <br>
+        <input type="text" name="age" placeholder="Age"> <br>
+        <input type="text" name="email" placeholder="Email"> <br>
+        <input type="password" name="password" placeholder="Password"> <br>
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
+```
+
