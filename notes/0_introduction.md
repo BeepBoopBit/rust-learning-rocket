@@ -269,7 +269,38 @@ fn somethingNew(data: Form<UserData>){
     // do something
 }
 ```
+#### Linent Parsing
 
+FromForm requires that the number of field is the same as the field to be submitted. This means that if ever that there was additional or missing field, it would fail. If want to still continue if there's still a missing field, we can make use of linent parsing
+
+```rust
+use rocket::request::LinentForm
+
+#[derive(FromForm)]
+struct SomeData{
+    // some data
+}
+
+
+#[post("/", data="<param>")]
+fn do_something(my_data: LinentForm<SomeData>){
+    // do something with the data
+}
+
+```
+
+#### Field Renaming
+
+Maybe you would want to rename a field of your struct. We can do this by adding `#[form(field = "value")]`
+
+```rust
+
+#[derive(FromForm)]
+struct Something{
+    #[form(fiend = "secret")]
+    api_type: String
+}
+```
 
 #### Sample Program for POST
 
@@ -351,3 +382,4 @@ fn main(){
 </html>
 ```
 
+#### Field Validation
