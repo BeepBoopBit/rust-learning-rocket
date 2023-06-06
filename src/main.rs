@@ -3,6 +3,20 @@
 #[macro_use] extern crate rocket;
 use rocket::http::RawStr;
 use rocket::http::Cookies;
+use serde::Deserialize;
+use rocket_contrib::json::Json;
+
+
+#[derive(Deserialize)]
+struct SomeJSON{
+    name: String,
+    age: u8,
+}
+
+#[post("/json", data = "<json>")]
+fn pass_json(json: Json<SomeJSON>) -> String{
+    format!("Name: {}, Age: {}", json.name, json.age)
+}
 
 #[get("/resource/<id>")]
 fn set_cookie(id:String, mut cookies: Cookies) -> String{
@@ -44,10 +58,19 @@ fn index() -> &'static str {
 }
 
 
+#[get("/auth?<username>&<password>")]
+fn authenticate(username: &RawStr, password: &RawStr) -> String{
+    format!("Username: {}, Password: {}", username.as_str(), password.as_str())
+}
 
+use rocket::response::status;
+#[post("/<id>")]
+fn few (id: usize) -> status::Accepted<String>{
+    status::Accepted(Some(format!("Hello {}", id)))
+}
 
 fn main(){
     let server = rocket::ignite();
-    let server = server.mount("/", routes![index, set_cookie, get_cookie, form, do_something]);
+    let server = server.mount("/", routes![index, set_cookie, get_cookie, form, do_something, pass_json, few,authenticate]);
     let server = server.launch();
 }

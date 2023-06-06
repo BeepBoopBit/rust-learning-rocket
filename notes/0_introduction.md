@@ -383,3 +383,98 @@ fn main(){
 ```
 
 #### Field Validation
+
+If you want to validate submissions in your form. We can make use of `FromFormValue`
+
+```rust
+
+use rocket::http::RawStr;
+use rocket::request::FromFormValue;
+
+struct UserAge(usize);
+
+impl<'v> FromFormValue<'v> for UserAge{
+    type Error = &'v RawStr;
+
+    fn from_form_value(form_value: &'v RawStr) -> Result<AdultAge, &'v RawStr> {
+        math form_value.parse::usize(){
+            Ok(age) if age >= 21 => {
+                Ok(AdultAge(age))
+            },
+            _ => Err(form_value),
+        }
+    }
+}
+
+#[derive(FromForm)]
+struct Person{
+    age: UserAge,
+}
+```
+
+Each time you've assigned a value to Person, since its type implements the trait `FromFormValue` it would call the `from_form_value` function to validate it.
+
+### Handling JSON
+
+In order for you to handle JSON, you would need to depend on serde. So add it into your dependencies.
+
+We can make use of serde in this following example:
+
+```rust
+use serde::Deserialize;
+use rocket_contrib::json::Json;
+
+#[derive(Deserialize)]
+struct Task{
+    description: String,
+    complete: bool,
+}
+
+#[post("/todo", data = "<task>")]
+fn new(task: Json<Task>){
+    // ...
+}
+
+```
+
+### Streaming
+
+If you want to handle incoming data directly. We can do this by using `rocket::Data`
+
+```rust
+
+use rocket::Data;
+
+#[post("/upload", format = "plain", data = "<data>")]
+fn upload(data: Data) -> Result<String, std::io::Error>{
+    data.stream_to_file("/tmp/upload.txt").map(|n| n.to_string())
+}
+
+```
+
+### Error Catchers
+
+Routing my fail and sometimes, we want to catch the failure on our own. An example might be if we want to catch ourselves the `404 Not Found` error:
+
+```rust
+use rocket::Request;
+
+#[catch(404)]
+fn not_found(req: &Request) -> String{
+    // do something
+}
+
+fn main(){
+    rocket::ignite().register(catchers![not_found]);
+}
+
+```
+
+What you see now in our main function is that we have use a new method called `register` which, in rocket sense, registers paths for errors defined in their attribute.
+
+## Responses
+
+Whenever we return a value from a function we give a response to the client. The type of our return value can be anything that implements the responder trait.
+
+Take note that a response contains an HTTP status, a header, and a body. This body may be either a fixed-sized or streaming. An example of this is String (fixed-sized) and File (Streamed Response)
+

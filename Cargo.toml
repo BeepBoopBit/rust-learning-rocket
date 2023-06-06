@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 rocket =  {version ="0.4.11"}
 serde = { version = "1.0.163", features = ["derive"] }
+rocket_contrib = "0.4.11"
